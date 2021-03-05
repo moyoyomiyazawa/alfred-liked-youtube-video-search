@@ -1,0 +1,17 @@
+{
+  "name": "user.workflow.E81FB427-CA06-499A-BBBE-BC82EF7803BC",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alfy": "^0.10.0",
+    "google-auth-library": "^7.0.2",
+    "googleapis": "^67.1.1"
+  }
+}
