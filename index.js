@@ -16,8 +16,9 @@ const clientSecret = process.env.CLIENT_SECRET;
 
 const oauth2Client = new OAuth2(clientId, clientSecret, 'urn:ietf:wg:oauth:2.0:oob');
 
-
+// TODO: 細かい動作をリファクタリングする
 (async () => {
+  // TODO: キャッシュがある場合は認証をスルーする
   const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode, scopes);
   const videos = await getFavoriteVideos(auth);
 
