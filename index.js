@@ -31,6 +31,4 @@ const oauth2Client = new OAuth2(clientId, clientSecret, 'urn:ietf:wg:oauth:2.0:o
   );
 
   alfy.output(items);
-
-  // TODO: インクリメンタルサーチを実装する（なぜかalfy.inputが取得できないので調査する）
 })();
