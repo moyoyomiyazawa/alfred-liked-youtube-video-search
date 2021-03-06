@@ -2,9 +2,9 @@
 
 const alfy = require('alfy');
 const { google } = require('googleapis');
-const OAuth2 = google.auth.OAuth2;
-const createItem = require('./lib/createItem');
 
+const createItem = require('./lib/createItem');
+const getAuthCode = require('./lib/getAuthCode');
 const getAuthorizedClient = require('./lib/getAuthorizedClient');
 const getFavoriteVideos = require('./lib/getFavoriteVideos');
 
@@ -14,12 +14,33 @@ const authorizationCode = process.env.AUTHORIZATION_CODE;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
-const oauth2Client = new OAuth2(clientId, clientSecret, 'urn:ietf:wg:oauth:2.0:oob');
-
 // TODO: 細かい動作をリファクタリングする
 (async () => {
+  // 必要な環境変数が未設定の場合は警告を出す
+  if (!clientId || !clientSecret) {
+    alfy.output([
+      createItem(
+        'Please set environment variable. ⚠️',
+        'Set CLIENT_ID and CLIENT_SECRET to workflow environment variable',
+        ''
+      ),
+    ]);
+    return;
+  }
+
+  const oauth2Client = new google.auth.OAuth2(
+    clientId,
+    clientSecret,
+    'urn:ietf:wg:oauth:2.0:oob'
+  );
+
+  if (!authorizationCode) {
+    getAuthCode(oauth2Client, scopes);
+    return;
+  }
+
   // TODO: キャッシュがある場合は認証をスルーする
-  const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode, scopes);
+  const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode);
   const videos = await getFavoriteVideos(auth);
 
   const items = alfy.inputMatches(videos, 'snippet.title').map((video) =>
