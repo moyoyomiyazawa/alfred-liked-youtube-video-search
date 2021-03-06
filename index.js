@@ -39,17 +39,36 @@ const clientSecret = process.env.CLIENT_SECRET;
     return;
   }
 
-  // TODO: キャッシュがある場合は認証をスルーする
-  const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode);
-  const videos = await getFavoriteVideos(auth);
+  let videos = alfy.cache.get('videos');
+  if (!videos) {
+    const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode);
+    videos = await getFavoriteVideos(auth);
+    alfy.cache.set('videos', videos, {maxAge: 60000})
+  }
 
-  const items = alfy.inputMatches(videos, 'snippet.title').map((video) =>
-    createItem(
-      video.snippet.title,
-      video.snippet.channelTitle,
-      `https://www.youtube.com/watch?v=${video.id}`
-    )
-  );
+  if (alfy.input.length > 1) {
+    const allItems = videos.map((video) =>
+      createItem(
+        video.snippet.title,
+        video.snippet.channelTitle,
+        `https://www.youtube.com/watch?v=${video.id}`
+      )
+    );
 
-  alfy.output(items);
+    // 全件表示
+    if (alfy.input === '--a') {
+      alfy.output(allItems);
+      return;
+    }
+
+    // インクリメンタル検索
+    const matchedItems = alfy.inputMatches(allItems, 'title');
+    if (!matchedItems.length) {
+      alfy.output([createItem('The requested video was not found. ⚠️', '', '')]);
+      return;
+    }
+    alfy.output(matchedItems);
+  } else {
+    alfy.output([createItem('Loading...', '', '')]);
+  }
 })();
