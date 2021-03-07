@@ -39,14 +39,19 @@ const clientSecret = process.env.CLIENT_SECRET;
     return;
   }
 
-  let videos = alfy.cache.get('videos');
-  if (!videos) {
-    const auth = await getAuthorizedClient(oauth2Client, tokenPath, authorizationCode);
-    videos = await getFavoriteVideos(auth);
-    alfy.cache.set('videos', videos, {maxAge: 60000})
-  }
-
   if (alfy.input.length > 1) {
+    let videos = alfy.cache.get('videos');
+    if (!videos) {
+      const auth = await getAuthorizedClient(
+        oauth2Client,
+        tokenPath,
+        authorizationCode
+      );
+      videos = await getFavoriteVideos(auth);
+      // キャッシュ時間: 30分
+      alfy.cache.set('videos', videos, { maxAge: 1800000 });
+    }
+
     const allItems = videos.map((video) =>
       createItem(
         video.snippet.title,
@@ -64,7 +69,13 @@ const clientSecret = process.env.CLIENT_SECRET;
     // インクリメンタル検索
     const matchedItems = alfy.inputMatches(allItems, 'title');
     if (!matchedItems.length) {
-      alfy.output([createItem('The requested video was not found. ⚠️', '', '')]);
+      alfy.output([
+        createItem(
+          'The requested video was not found. ⚠️',
+          'Search for videos on YouTube.',
+          `https://www.youtube.com/results?search_query=${alfy.input}`
+        ),
+      ]);
       return;
     }
     alfy.output(matchedItems);
