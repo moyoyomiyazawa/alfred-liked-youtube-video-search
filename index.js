@@ -1,6 +1,7 @@
 'use strict';
 
 const alfy = require('alfy');
+const shuffle = require('shuffle-array');
 const { google } = require('googleapis');
 
 const createItem = require('./lib/createItem');
@@ -40,6 +41,13 @@ const clientSecret = process.env.CLIENT_SECRET;
   }
 
   if (alfy.input.length > 1) {
+    // キャッシュクリア
+    if (alfy.input === '--c') {
+      alfy.cache.set('videos', null);
+      alfy.output([createItem('Cleared cache.', '', '')]);
+      return;
+    }
+
     let videos = alfy.cache.get('videos');
     if (!videos) {
       const auth = await getAuthorizedClient(
@@ -63,6 +71,22 @@ const clientSecret = process.env.CLIENT_SECRET;
     // 全件表示
     if (alfy.input === '--a') {
       alfy.output(allItems);
+      return;
+    }
+
+    // ランダム表示
+    // `--r`のあとに数値を入力すると、その数の分、ランダムな記事を取得して表示する
+    if (/^--r/.test(alfy.input)) {
+      const result = alfy.input.match(/^--r (\d*)/);
+      // 取得件数が未指定なら1件表示
+      if (!result) {
+        const randomItem = shuffle.pick(allItems);
+        alfy.output([randomItem]);
+        return;
+      }
+      // 取得件数の指定があれば、指定数分の要素を取得
+      const randomItems = shuffle.pick(allItems, { picks: Number(result[1]) });
+      alfy.output(randomItems);
       return;
     }
 
