@@ -7,7 +7,7 @@ const { google } = require('googleapis');
 const createItem = require('./lib/createItem');
 const getAuthCode = require('./lib/getAuthCode');
 const getAuthorizedClient = require('./lib/getAuthorizedClient');
-const getFavoriteVideos = require('./lib/getFavoriteVideos');
+const getLikedVideos = require('./lib/getLikedVideos');
 
 const scopes = ['https://www.googleapis.com/auth/youtube.readonly'];
 const tokenPath = __dirname + '/' + 'alfred-youtube-search.json';
@@ -15,7 +15,7 @@ const authorizationCode = process.env.AUTHORIZATION_CODE;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
-// TODO: 細かい動作をリファクタリングする
+
 (async () => {
   // 必要な環境変数が未設定の場合は警告を出す
   if (!clientId || !clientSecret) {
@@ -55,7 +55,7 @@ const clientSecret = process.env.CLIENT_SECRET;
         tokenPath,
         authorizationCode
       );
-      videos = await getFavoriteVideos(auth);
+      videos = await getLikedVideos(auth);
       // キャッシュ時間: 30分
       alfy.cache.set('videos', videos, { maxAge: 1800000 });
     }
