@@ -1591,6 +1591,11 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
+unique-objects@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/unique-objects/-/unique-objects-1.0.5.tgz#adf819d97b0bc7ff8f2f2c007adf0b3372055d66"
+  integrity sha512-LzSSM2fsUBQbgD6qspBnKHe3+PjhLy22XMzJtpk4TPZJkwUXU1rQS3cyLnvDU6nXDe2pA8dL2WjT5yG7de1n6Q==
+
 untildify@^3.0.2:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/untildify/-/untildify-3.0.3.tgz#1e7b42b140bcfd922b22e70ca1265bfe3634c7c9"

@@ -13,6 +13,7 @@
     "alfy": "^0.10.0",
     "google-auth-library": "^7.0.2",
     "googleapis": "^67.1.1",
-    "shuffle-array": "^1.0.1"
+    "shuffle-array": "^1.0.1",
+    "unique-objects": "^1.0.5"
   }
 }

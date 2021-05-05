@@ -3,6 +3,7 @@
 const alfy = require('alfy');
 const shuffle = require('shuffle-array');
 const { google } = require('googleapis');
+const uniqueObjects = require('unique-objects');
 
 const createItem = require('./lib/createItem');
 const getAuthCode = require('./lib/getAuthCode');
@@ -39,7 +40,6 @@ const clientSecret = process.env.CLIENT_SECRET;
     getAuthCode(oauth2Client, scopes);
     return;
   }
-
   if (alfy.input.length > 1) {
     // キャッシュクリア
     if (alfy.input === '--c') {
@@ -50,23 +50,32 @@ const clientSecret = process.env.CLIENT_SECRET;
 
     let videos = alfy.cache.get('videos');
     if (!videos) {
-      const auth = await getAuthorizedClient(
-        oauth2Client,
-        tokenPath,
-        authorizationCode
-      );
-      videos = await getLikedVideos(auth);
+      try {
+        const auth = await getAuthorizedClient(
+          oauth2Client,
+          tokenPath,
+          authorizationCode
+        );
+        videos = await getLikedVideos(auth);
+      } catch (error) {
+        alfy.output([
+          createItem('Token has been expired or revoked. ⚠️', '', ''),
+        ]);
+        return;
+      }
       // キャッシュ時間: 30分
       alfy.cache.set('videos', videos, { maxAge: 1800000 });
     }
 
-    const allItems = videos.map((video) =>
+    let allItems = videos.map((video) =>
       createItem(
         video.snippet.title,
         video.snippet.channelTitle,
         `https://www.youtube.com/watch?v=${video.id}`
       )
     );
+    // 重複削除、暫定措置
+    allItems = uniqueObjects(allItems, ['title']);
 
     // 全件表示
     if (alfy.input === '--a') {
