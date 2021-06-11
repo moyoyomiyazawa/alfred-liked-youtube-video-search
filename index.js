@@ -6,7 +6,7 @@ const { google } = require('googleapis');
 const uniqueObjects = require('unique-objects');
 
 const createItem = require('./lib/createItem');
-const getAuthCode = require('./lib/getAuthCode');
+const getAuthUrl = require('./lib/getAuthUrl');
 const getAuthorizedClient = require('./lib/getAuthorizedClient');
 const getLikedVideos = require('./lib/getLikedVideos');
 const deleteAuthorizationCode = require('./lib/deleteAuthorizationCode');
@@ -37,7 +37,14 @@ const clientSecret = process.env.CLIENT_SECRET;
   );
 
   if (!authorizationCode) {
-    getAuthCode(oauth2Client, scopes);
+    const authUrl = getAuthUrl(oauth2Client, scopes);
+    alfy.output([
+      createItem(
+        'Authorize this app by visiting this url.',
+        '',
+        authUrl
+      ),
+    ]);
     return;
   }
   if (alfy.input.length > 1) {
@@ -58,18 +65,13 @@ const clientSecret = process.env.CLIENT_SECRET;
         );
         videos = await getLikedVideos(auth);
       } catch (error) {
-        if (String(error.response.status).startsWith('4')) {
-          // 環境変数 Authorization Code を初期化
-          deleteAuthorizationCode(authorizationCode);
-          // token fileを削除
-          const fs = require('fs');
-          fs.unlinkSync(tokenPath);
-          // AuthCodeを再取得
-          getAuthCode(oauth2Client, scopes);
-          return;
-        }
+        // 環境変数 Authorization Code を初期化
+        deleteAuthorizationCode(authorizationCode);
+        // token fileを削除
+        require('fs').unlinkSync(tokenPath);
+        const authUrl = getAuthUrl(oauth2Client, scopes);
         alfy.output([
-          createItem('Token has been expired or revoked. ⚠️', '', ''),
+          createItem('Authorize this app by visiting this url.', '', authUrl),
         ]);
         return;
       }
