@@ -9,13 +9,13 @@ const createItem = require('./lib/createItem');
 const getAuthCode = require('./lib/getAuthCode');
 const getAuthorizedClient = require('./lib/getAuthorizedClient');
 const getLikedVideos = require('./lib/getLikedVideos');
+const deleteAuthorizationCode = require('./lib/deleteAuthorizationCode');
 
 const scopes = ['https://www.googleapis.com/auth/youtube.readonly'];
 const tokenPath = __dirname + '/' + 'alfred-youtube-search.json';
 const authorizationCode = process.env.AUTHORIZATION_CODE;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
-
 
 (async () => {
   // 必要な環境変数が未設定の場合は警告を出す
@@ -58,6 +58,16 @@ const clientSecret = process.env.CLIENT_SECRET;
         );
         videos = await getLikedVideos(auth);
       } catch (error) {
+        if (String(error.response.status).startsWith('4')) {
+          // 環境変数 Authorization Code を初期化
+          deleteAuthorizationCode(authorizationCode);
+          // token fileを削除
+          const fs = require('fs');
+          fs.unlinkSync(tokenPath);
+          // AuthCodeを再取得
+          getAuthCode(oauth2Client, scopes);
+          return;
+        }
         alfy.output([
           createItem('Token has been expired or revoked. ⚠️', '', ''),
         ]);
